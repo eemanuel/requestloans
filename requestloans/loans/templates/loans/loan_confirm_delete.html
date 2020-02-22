@@ -1,0 +1,9 @@
+<form action="" method="post">
+    {% csrf_token %}
+    <p>Do you want to DELETE the loan id={{ object.id }}</p>
+    <input type="submit" value="Yes"/>
+</form>
+<button onclick=
+    "document.location = '{% url 'loan-list'%}'">
+No
+</button>
