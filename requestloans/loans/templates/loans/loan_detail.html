@@ -1,0 +1,36 @@
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Amount</th>
+        <th>DNI</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Gender</th>
+        <th>Email</th>
+        <th>Approved</th>
+        <th>CreateAt</th>
+        <th>UpdatedAt</th>
+    </tr>
+    <tr>
+        <td>{{ object.id }}</td>
+        <td>{{ object.amount }}</td>
+        <td>{{ object.dni }}</td>
+        <td>{{ object.firstname }}</td>
+        <td>{{ object.lastname }}</td>
+        <td>{{ object.gender }}</td>
+        <td>{{ object.email }}</td>
+        <td>{{ object.approved }}</td>
+        <td>{{ object.created }}</td>
+        <td>{{ object.updated }}</td>
+        <td>
+        <button onclick=
+            "document.location = '{% url 'loan-delete' object.id %}'">
+        Delete
+        </button>
+        </td>
+    </tr>
+</table>
+<button onclick=
+    "document.location = '{% url 'loan-list'%}'">
+Return to List
+</button>
