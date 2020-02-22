@@ -70,14 +70,6 @@ class LoanCreateViewTestCase(TestCase):
 
 class LoanListViewTestCase(TestCase):
     def setUp(self):
-        self.request_create_data = {
-            "dni": "33777666",
-            "firstname": "Cosme",
-            "lastname": "Fulanito",
-            "gender": MALE,
-            "email": "pepe@localhost",
-            "amount": 7000,
-        }
         create_user_data = {
             "username": "super",
             "email": "super@localhost",
