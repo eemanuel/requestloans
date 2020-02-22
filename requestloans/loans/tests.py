@@ -75,16 +75,15 @@ class LoanListViewTestCase(TestCase):
             "email": "super@localhost",
             "password": "69pwd69",
         }
+        self.superuser = self.create_superuser(create_user_data)
         for _ in range(5):
             LoansFactory.create_loan()
-        self.superuser = self.create_superuser(create_user_data)
         self.client = Client()
 
     def _list_data(self):
         return self.client.get(reverse("loan-list"), format="json")
 
     def create_superuser(self, data):
-        # self.user_admin = User(username="The Admin" is_staff=True)
         return User.objects.create_superuser(
             data.get("username"), data.get("email"), data.get("password")
         )
@@ -130,8 +129,8 @@ class LoanDetailViewTestCase(TestCase):
             "email": "super@localhost",
             "password": "69pwd69",
         }
-        self.loan = LoansFactory.create_loan()
         self.superuser = self.create_superuser(create_user_data)
+        self.loan = LoansFactory.create_loan()
         self.client = Client()
 
     def _detail_data(self, pk):
@@ -141,7 +140,6 @@ class LoanDetailViewTestCase(TestCase):
         )
 
     def create_superuser(self, data):
-        # self.user_admin = User(username="The Admin" is_staff=True)
         return User.objects.create_superuser(
             data.get("username"), data.get("email"), data.get("password")
         )
@@ -197,18 +195,23 @@ class LoanUpdateViewTestCase(TestCase):
             "email": "someone@localhost",
             "amount": 9777,
         }
+        create_user_data = {
+            "username": "super",
+            "email": "super@localhost",
+            "password": "69pwd69",
+        }
+        self.superuser = self.create_superuser(create_user_data)
         self.loan = LoansFactory.create_loan()
         self.client = Client()
 
     def _update_data(self, data, pk):
-        return self.client.put(
+        return self.client.post(
             reverse("loan-update", args=[pk]),
             data=data,
             format="json"
         )
 
     def create_superuser(self, data):
-        # self.user_admin = User(username="The Admin" is_staff=True)
         return User.objects.create_superuser(
             data.get("username"), data.get("email"), data.get("password")
         )
@@ -222,34 +225,26 @@ class LoanUpdateViewTestCase(TestCase):
         """
 
         self.authenticate_superuser()
-        loan_dict = self.loan.__dict__
-        response = self._update_data(self.request_update_data, pk=self.loan.id)
+        data = self.request_update_data
+        response = self._update_data(data=data, pk=self.loan.id)
         self.loan.refresh_from_db()
         loan = self.loan
-        assert loan_dict.get("dni") == loan.dni
-        assert loan_dict.get("firstname") == loan.firstname
-        assert loan_dict.get("lastname") == loan.lastname
-        assert loan_dict.get("gender") == loan.gender
-        assert loan_dict.get("email") == loan.email
-        assert loan_dict.get("amount") == loan.amount
-        assert loan_dict.get("approved") == loan.approved
-        assert loan_dict.get(
-            "created"
-        ).strftime("%Y-%m-%d") == loan.created.strftime("%Y-%m-%d")
-        assert loan_dict.get(
-            "updated"
-        ).strftime("%Y-%m-%d") == loan.updated.strftime("%Y-%m-%d")
+        assert data.get("dni") == loan.dni
+        assert data.get("firstname") == loan.firstname
+        assert data.get("lastname") == loan.lastname
+        assert data.get("gender") == loan.gender
+        assert data.get("email") == loan.email
+        assert data.get("amount") == loan.amount
         assert response.status_code == 302
 
-    def test_update_invalid_id_redirect(self):
+    def test_update_invalid_id_error(self):
         """
-        Testing if redirect if pk is invalid.
+        Testing if returns error if pk is invalid.
         """
 
         self.authenticate_superuser()
         response = self._update_data(self.request_update_data, pk=666)
-        assert response.url[:27] == "/admin/login/?next=/update/"
-        assert response.status_code == 302
+        assert response.status_code == 404
 
     def test_update_not_auth_redirect(self):
         """
@@ -258,4 +253,54 @@ class LoanUpdateViewTestCase(TestCase):
 
         response = self._update_data(self.request_update_data, pk=self.loan.id)
         assert response.url[:27] == "/admin/login/?next=/update/"
+        assert response.status_code == 302
+
+
+class LoanDeleteViewTestCase(TestCase):
+    def setUp(self):
+        create_user_data = {
+            "username": "super",
+            "email": "super@localhost",
+            "password": "69pwd69",
+        }
+        self.superuser = self.create_superuser(create_user_data)
+        self.loan = LoansFactory.create_loan()
+        self.client = Client()
+
+    def _delete_data(self, pk):
+        return self.client.delete(
+            reverse("loan-delete", args=[pk]),
+            format="json"
+        )
+
+    def create_superuser(self, data):
+        return User.objects.create_superuser(
+            data.get("username"), data.get("email"), data.get("password")
+        )
+
+    def authenticate_superuser(self):
+        self.client.login(username='super', password='69pwd69')
+
+    def test_delete_success(self):
+        """
+        Testing if loan is successfully deleted.
+        """
+
+        self.authenticate_superuser()
+        assert Loan.objects.count() == 1
+        response = self._delete_data(self.loan.id)
+        assert Loan.objects.count() == 0
+        assert response.url == "/list/"
+        assert response.status_code == 302
+
+
+    def test_delete_not_auth_redirect(self):
+        """
+        Testing if redirect when user is not staff user.
+        """
+
+        assert Loan.objects.count() == 1
+        response = self._delete_data(self.loan.id)
+        assert Loan.objects.count() == 1
+        assert response.url[:27] == "/admin/login/?next=/delete/"
         assert response.status_code == 302
