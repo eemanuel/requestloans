@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}
+Loan List
+{% endblock title %}
+{% block content %}
+    <h1>Loan List</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Amount</th>
+            <th>DNI</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Approved</th>
+        </tr>
+        {% for loan in object_list %}
+        <tr>
+            <td>
+            <a href="{% url 'loan-detail' loan.id %}">{{ loan.id }}</a>
+            </td>
+            <td>{{ loan.amount }}</td>
+            <td>{{ loan.dni }}</td>
+            <td>{{ loan.firstname }}</td>
+            <td>{{ loan.lastname }}</td>
+            <td>{{ loan.approved }}</td>
+            <td>
+            <button onclick=
+                "document.location = '{% url 'loan-update' loan.id %}'">
+            Update
+            </button>
+            </td>
+            <td>
+            <button onclick=
+                "document.location = '{% url 'loan-detail' loan.id %}'">
+            Detail
+            </button>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>No objects to list.</tr>
+        {% endfor %}
+    </table>
+<button onclick=
+    "document.location = '{% url 'loan-create'%}'">
+Create
+</button>
+{% endblock content %}
