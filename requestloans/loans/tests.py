@@ -44,3 +44,23 @@ class LoanCreateViewTestCase(TestCase):
         assert loan.created is not None
         assert loan.updated is not None
         assert response.status_code == 302
+
+    def test_create_bad_request_error(self):
+        """
+        Testing if loan is not created with bad request.
+        """
+
+        Loan.objects.count() == 5
+        bad_request_create_data = {
+            "dni": 50555000,
+            "gender": "X",
+            "email": "email",
+            "amount": 10777666555,
+        }
+        response = self._create_data(bad_request_create_data)
+        response_str = response.content.decode()
+        assert "This field is required." in response_str
+        assert "Select a valid choice. X is not one of the available choices." in response_str
+        assert "Enter a valid email address." in response_str
+        assert "Ensure that there are no more than 6 digits in total." in response_str
+        assert response.status_code == 200
