@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.test import Client
 from django.urls import reverse
 
-from .constants import ANOTHER, FEMALE, MALE
+from .constants import MALE
 from .models import Loan
 
 from core_utils.utils import LoansFactory
@@ -108,10 +108,7 @@ class LoanListViewTestCase(TestCase):
         for loan in loan_qs:
             assert loan.dni in response_str
             assert loan.firstname in response_str
-            assert loan.dni in response_str
             assert loan.lastname in response_str
-            assert loan.gender in response_str
-            assert loan.email in response_str
             assert str(loan.amount) in response_str
             assert str(loan.approved) in response_str
         assert response.status_code == 200
@@ -123,4 +120,70 @@ class LoanListViewTestCase(TestCase):
 
         response = self._list_data()
         assert response.url == "/admin/login/?next=/list/"
+        assert response.status_code == 302
+
+
+class LoanDetailViewTestCase(TestCase):
+    def setUp(self):
+        create_user_data = {
+            "username": "super",
+            "email": "super@localhost",
+            "password": "69pwd69",
+        }
+        for _ in range(5):
+            LoansFactory.create_loan()
+        self.superuser = self.create_superuser(create_user_data)
+        self.client = Client()
+
+    def _detail_data(self, pk):
+        return self.client.get(
+            reverse("loan-detail", args=[pk]),
+            format="json"
+        )
+
+    def create_superuser(self, data):
+        # self.user_admin = User(username="The Admin" is_staff=True)
+        return User.objects.create_superuser(
+            data.get("username"), data.get("email"), data.get("password")
+        )
+
+    def authenticate_superuser(self):
+        self.client.login(username='super', password='69pwd69')
+
+    def test_detail_success(self):
+        """
+        Testing if loan is successfully detailed.
+        """
+
+        self.authenticate_superuser()
+        loan = Loan.objects.first()
+        response = self._detail_data(loan.id)
+        response_str = response.content.decode()
+        assert loan.dni in response_str
+        assert loan.firstname in response_str
+        assert loan.dni in response_str
+        assert loan.lastname in response_str
+        assert loan.gender in response_str
+        assert loan.email in response_str
+        assert str(loan.amount) in response_str
+        assert str(loan.approved) in response_str
+        assert response.status_code == 200
+
+    def test_detail_invalid_id_error(self):
+        """
+        Testing if view returns error if pk is invalid.
+        """
+
+        self.authenticate_superuser()
+        response = self._detail_data(pk=666)
+        assert response.status_code == 404
+
+    def test_detail_not_auth_error(self):
+        """
+        Testing if return error when user is not staff user.
+        """
+
+        loan = Loan.objects.first()
+        response = self._detail_data(loan.id)
+        assert response.url[:27] == "/admin/login/?next=/detail/"
         assert response.status_code == 302
