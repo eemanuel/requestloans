@@ -25,7 +25,7 @@ SECRET_KEY = 'kbn@ql2(mer4vntwk+x*+omdofxl*uh0wh4i%4mlua85riw1l_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
