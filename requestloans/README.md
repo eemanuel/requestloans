@@ -31,6 +31,12 @@ $ python manage.py migrate
 $ python manage.py runserver
 ```
 
+### Check in browser the url
+
+```sh
+http://localhost:8000/
+```
+
 ## To run in docker container
 
 At the same level than manage.py
@@ -55,3 +61,5 @@ $ docker-compose up
 
 **Delete:**
 /id/delete/
+
+*Only create is for everybody. Another enpoints are for Admins*
